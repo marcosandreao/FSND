@@ -1,22 +1,54 @@
 from datetime import datetime
-from flask_wtf import Form
-from wtforms import StringField, SelectField, SelectMultipleField, DateTimeField, BooleanField
-from wtforms.validators import DataRequired, AnyOf, URL
 
-class ShowForm(Form):
-    artist_id = StringField(
-        'artist_id'
-    )
-    venue_id = StringField(
-        'venue_id'
-    )
+from flask_wtf import FlaskForm
+from wtforms import StringField, SelectField, SelectMultipleField, DateTimeField, BooleanField
+from wtforms.validators import DataRequired, URL, InputRequired, ValidationError
+
+
+def validate_past_date(form, field):
+    if field.data.date() < datetime.now().date():
+        raise ValidationError('Show "start time" is on past')
+
+
+def validate_phone(form, field):
+    error = ValidationError('Phone invalid: xxx-xxx-xxx')
+    phone = field.data
+    mask = '999-999-999'
+    if len(phone) == 0:
+        return
+
+    if len(phone) != len(mask):
+        raise error
+    index = 0
+    for v in phone:
+        f = mask[index]
+
+        if f == '9':
+            try:
+                int(v)
+            except:
+                raise error
+            else:
+                index += 1
+            continue
+
+        if f == '-' and str(v) == f:
+            index += 1
+            continue
+        raise error
+
+
+class ShowForm(FlaskForm):
+    artist_id = SelectField('Artist', validators=[InputRequired()], validate_choice=False)
+    venue_id = SelectField('Venue', validators=[InputRequired()], validate_choice=False)
     start_time = DateTimeField(
         'start_time',
-        validators=[DataRequired()],
-        default= datetime.today()
+        validators=[DataRequired(), validate_past_date],
+        default=datetime.today(),
     )
 
-class VenueForm(Form):
+
+class VenueForm(FlaskForm):
     name = StringField(
         'name', validators=[DataRequired()]
     )
@@ -83,10 +115,10 @@ class VenueForm(Form):
         'address', validators=[DataRequired()]
     )
     phone = StringField(
-        'phone'
+        'phone', validators=[validate_phone]
     )
     image_link = StringField(
-        'image_link'
+        'image_link', validators=[URL()]
     )
     genres = SelectMultipleField(
         # TODO implement enum restriction
@@ -117,18 +149,17 @@ class VenueForm(Form):
         'facebook_link', validators=[URL()]
     )
     website_link = StringField(
-        'website_link'
+        'website_link', validators=[URL()]
     )
 
-    seeking_talent = BooleanField( 'seeking_talent' )
+    seeking_talent = BooleanField('seeking_talent')
 
     seeking_description = StringField(
         'seeking_description'
     )
 
 
-
-class ArtistForm(Form):
+class ArtistForm(FlaskForm):
     name = StringField(
         'name', validators=[DataRequired()]
     )
@@ -192,11 +223,11 @@ class ArtistForm(Form):
         ]
     )
     phone = StringField(
-        # TODO implement validation logic for state
-        'phone'
+        'phone', validators=[validate_phone]
     )
+
     image_link = StringField(
-        'image_link'
+        'image_link', validators=[URL()]
     )
     genres = SelectMultipleField(
         'genres', validators=[DataRequired()],
@@ -221,19 +252,18 @@ class ArtistForm(Form):
             ('Soul', 'Soul'),
             ('Other', 'Other'),
         ]
-     )
+    )
     facebook_link = StringField(
         # TODO implement enum restriction
         'facebook_link', validators=[URL()]
-     )
+    )
 
     website_link = StringField(
-        'website_link'
-     )
+        'website_link', validators=[URL()]
+    )
 
-    seeking_venue = BooleanField( 'seeking_venue' )
+    seeking_venue = BooleanField('seeking_venue')
 
     seeking_description = StringField(
-            'seeking_description'
-     )
-
+        'seeking_description'
+    )

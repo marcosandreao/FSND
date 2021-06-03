@@ -10,7 +10,7 @@
 			ID: {{ venue.id }}
 		</p>
 		<div class="genres">
-			{% for genre in venue.genres %}
+			{% for genre in venue.genres.split(',') %}
 			<span class="genre">{{ genre }}</span>
 			{% endfor %}
 		</div>
@@ -76,6 +76,30 @@
 </section>
 
 <a href="/venues/{{ venue.id }}/edit"><button class="btn btn-primary btn-lg">Edit</button></a>
+<a href="#" id="delete_venue" data-id="{{ venue.id }}" class="btn btn-danger btn-lg" >Delete</a>
 
+<script>
+	const buttonDelete = document.getElementById('delete_venue')
+	buttonDelete.onclick = function(e){
+		e.preventDefault();
+		e.stopPropagation();
+		if (confirm("Are you sure?")){
+			const id = e.target.dataset['id'];
+			fetch('/venues/' + id, {
+				method: 'DELETE'
+			}).then(function(resp){
+				console.log(resp);
+				if (resp.status === 200) {
+					window.location.href = '/venues'
+				} else {
+					resp.json().then(function(data){
+						alert(data.error ? data.error : 'Error');
+					});
+				}
+			});
+		}
+
+	}
+</script>
 {% endblock %}
 
