@@ -1,3 +1,6 @@
+# https://flask-restful.readthedocs.io/en/latest/
+# https://flask.palletsprojects.com/en/2.0.x/
+# https://flask-restful.readthedocs.io/en/latest/intermediate-usage.html#use-with-blueprintsl
 # Backend - Full Stack Trivia API 
 
 ### Installing Dependencies for the Backend

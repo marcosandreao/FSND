@@ -12,14 +12,16 @@ class QuestionView extends Component {
       questions: [],
       page: 1,
       totalQuestions: 0,
-      categories: {},
+      categories: [],
       currentCategory: null,
     }
   }
 
   componentDidMount() {
-    this.getQuestions();
+    this.listCategories();
   }
+
+  catById = (catId) => this.state.categories.filter(f=>f.id == catId)[0];
 
   getQuestions = () => {
     $.ajax({
@@ -27,10 +29,9 @@ class QuestionView extends Component {
       type: "GET",
       success: (result) => {
         this.setState({
-          questions: result.questions,
-          totalQuestions: result.total_questions,
-          categories: result.categories,
-          currentCategory: result.current_category })
+          questions: result.data,
+          totalQuestions: result.total,
+          currentCategory:  this.state.categories[0].type })
         return;
       },
       error: (error) => {
@@ -64,9 +65,28 @@ class QuestionView extends Component {
       type: "GET",
       success: (result) => {
         this.setState({
-          questions: result.questions,
-          totalQuestions: result.total_questions,
-          currentCategory: result.current_category })
+          questions: result.data,
+          totalQuestions: result.total,
+          currentCategory: this.catById(id).type
+         })
+        return;
+      },
+      error: (error) => {
+        alert('Unable to load questions. Please try your request again')
+        return;
+      }
+    })
+  }
+
+  listCategories = (id) => {
+    $.ajax({
+      url: `/categories`,
+      type: "GET",
+      success: (result) => {
+        this.setState({
+          categories: result.data
+        });
+        this.getQuestions();
         return;
       },
       error: (error) => {
@@ -125,10 +145,10 @@ class QuestionView extends Component {
         <div className="categories-list">
           <h2 onClick={() => {this.getQuestions()}}>Categories</h2>
           <ul>
-            {Object.keys(this.state.categories).map((id, ) => (
-              <li key={id} onClick={() => {this.getByCategory(id)}}>
-                {this.state.categories[id]}
-                <img className="category" src={`${this.state.categories[id].toLowerCase()}.svg`}/>
+          {this.state.categories.map((cat, ) => (
+              <li key={cat.id} onClick={() => {this.getByCategory(cat.id)}}>
+                {cat.type}
+                <img className="category" src={`${cat.type.toLowerCase()}.svg`}/>
               </li>
             ))}
           </ul>
@@ -141,7 +161,7 @@ class QuestionView extends Component {
               key={q.id}
               question={q.question}
               answer={q.answer}
-              category={this.state.categories[q.category]} 
+              category={this.catById(q.category).type} 
               difficulty={q.difficulty}
               questionAction={this.questionAction(q.id)}
             />
