@@ -1,4 +1,4 @@
-from flask_sqlalchemy import SQLAlchemy
+from flask_sqlalchemy import SQLAlchemy, BaseQuery
 from sqlalchemy import Column, String, Integer
 
 database_name = "trivia"
@@ -14,12 +14,26 @@ def setup_db(app):
     db.create_all()
 
 
+class CategoryQuery(BaseQuery):
+    def ordered(self):
+        return self.order_by(Category.type)
+
+
+class QuestionQuery(BaseQuery):
+    def by_category(self, cat_id):
+        return self.filter(Question.category == cat_id).order_by(Question.question)
+
+    def search(self, search_term):
+        return self.filter((Question.question.ilike('%{0}%'.format(search_term)))).order_by(Question.question)
+
+
 class Question(db.Model):
     """
     Question
 
     """
     __tablename__ = 'questions'
+    query_class = QuestionQuery
 
     id = Column(Integer, primary_key=True)
     question = Column(String)
@@ -60,6 +74,7 @@ class Category(db.Model):
 
     """
     __tablename__ = 'categories'
+    query_class = CategoryQuery
 
     id = Column(Integer, primary_key=True)
     type = Column(String)
