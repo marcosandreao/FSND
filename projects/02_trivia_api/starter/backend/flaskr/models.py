@@ -21,7 +21,13 @@ class CategoryQuery(BaseQuery):
 
 class QuestionQuery(BaseQuery):
     def by_category(self, cat_id):
-        return self.filter(Question.category == cat_id).order_by(Question.question)
+        return self.filter(Question.category == cat_id)
+
+    def by_cat(self, cat_id, not_in):
+        return self.filter(Question.category == cat_id, not_in)
+
+    def not_in(self, ids):
+        return self.filter(Question.id.notin_(ids))
 
     def search(self, search_term):
         return self.filter((Question.question.ilike('%{0}%'.format(search_term)))).order_by(Question.question)

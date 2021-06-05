@@ -1,6 +1,7 @@
 from flask import Blueprint, request
 from flask import current_app as app
 from flask_restful import Api, Resource, fields, marshal_with, reqparse, abort
+from sqlalchemy import func
 
 from flaskr import Category, Question
 
@@ -62,22 +63,22 @@ class QuestionListResource(Resource):
     @marshal_with(p_fields)
     def get(self):
         app.logger.debug('list questions')
-        search_term = request.form.get('search_term', '')
+        search_term = request.args.get('search_term', '')
         page = int(request.args.get('page', 1))
         limit = int(request.args.get('limit', 10))
 
         query = Question.query.order_by(Question.question)
-        if not search_term:
+        if search_term and len(search_term) > 0:
             query = query.search(search_term)
 
-        pagination = query.paginate(page, per_page=limit)
+        data = query.paginate(page, per_page=limit)
         return {
-            'data': pagination.items,
-            'total': pagination.total,
-            'page': pagination.page,
-            'total_pages': pagination.pages,
-            'has_prev': pagination.has_prev,
-            'has_next': pagination.has_next,
+            'data': data.items,
+            'total': data.total,
+            'page': data.page,
+            'total_pages': data.pages,
+            'has_prev': data.has_prev,
+            'has_next': data.has_next,
         }
 
     @marshal_with(id_field)
@@ -115,15 +116,35 @@ class CategoryQuestionResource(Resource):
 
     @marshal_with(marshal_list_all(q_fields))
     def get(self, cat_id):
-        questions = Question.query.by_category(cat_id).all()
+        questions = Question.query.by_category(cat_id).order_by(Question.question).all()
         return {
             'data': questions,
             'total': len(questions)
         }
 
 
+class QuizzesList(Resource):
+
+    @marshal_with(q_fields)
+    def post(self):
+        q_parser = reqparse.RequestParser()
+        q_parser.add_argument('previous_questions', type=list, help="an array of question id's such as [1, 4, 20, 15]",
+                              location='json')
+        q_parser.add_argument('quiz_category', type=str, help="a string of the current category", location='json')
+        args = q_parser.parse_args()
+        cat_id = int(args['quiz_category'])
+        query = Question.query.not_in(args['previous_questions'])
+        if cat_id > 0:
+            query = query.by_category(cat_id)
+
+        question = query.order_by(func.random()).first()
+        if not question:
+            return None, 204
+        return question
+
+
 rest_api.add_resource(CategoryListResource, '/categories')
 rest_api.add_resource(CategoryQuestionResource, '/categories/<int:cat_id>/questions')
 rest_api.add_resource(QuestionListResource, '/questions')
 rest_api.add_resource(QuestionResource, '/questions/<int:question_id>')
-
+rest_api.add_resource(QuizzesList, '/quizzes')

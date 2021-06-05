@@ -103,6 +103,36 @@ class TriviaTestCase(unittest.TestCase):
         # check is all result is from category 3
         self.assertEqual(len(data['data']), len([d for d in data['data'] if d['category'] == '3']))
 
+    def test_quizzes_category_6(self):
+        """
+        quiz to category 6..
+        there is two question in category 6
+        """
+
+        def request(previous_questions):
+            _res = self.client().post('/api/quizzes', json={
+                'quiz_category': 6,
+                'previous_questions': previous_questions
+            })
+            return json.loads(_res.data) if _res.status_code == 200 else None, _res.status_code
+
+        previous = []
+        # first question
+        (data, status_code) = request(previous)
+        # check is same category
+        self.assertEqual('6', data['category'])
+        previous.append(data['id'])
+
+        (data, status_code) = request(previous)
+        # check is same category
+        self.assertEqual('6', data['category'])
+        previous.append(data['id'])
+
+        (data, status_code) = request(previous)
+        self.assertFalse(data)  # empty result
+        # there is no question else
+        self.assertEqual(status_code, 204)  # not content
+
 
 # Make the tests conveniently executable
 if __name__ == "__main__":
