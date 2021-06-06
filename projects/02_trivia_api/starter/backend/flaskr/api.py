@@ -11,7 +11,6 @@ rest_api = Api(api)
 parser = reqparse.RequestParser()
 parser.add_argument('page', type=int, location='args', default=1)
 
-# https://flask-restful.readthedocs.io/en/latest/
 cat_field = {
     'type': fields.String,
     'id': fields.Integer
@@ -26,7 +25,7 @@ q_fields = {
     'question': fields.String,
     'difficulty': fields.Integer,
     'answer': fields.String,
-    'category': fields.String,
+    'category': fields.Integer,
 }
 p_fields = {
     'page': fields.Integer,

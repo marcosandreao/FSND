@@ -21,6 +21,13 @@ pip install -r requirements.txt
 ```
 export FLASK_APP=flaskr
 export FLASK_ENV=development # enables debug mode
+# default database uri connection 'postgresql://caryn:caryn@localhost:5432/trivia'
+# to configure a new uri database connection, set ENVs bellow  
+export DB_USER=your_db_user
+export DB_PASSWORD=your_db_password
+export DB_HOST=your_db_host
+export DB_PORT=your_db_port  
+export DB_NAME=your_db_name 
 ```
 4. **Setup database:**
 ```
