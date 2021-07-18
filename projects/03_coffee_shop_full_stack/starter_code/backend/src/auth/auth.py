@@ -1,14 +1,16 @@
 import json
-from flask import request, _request_ctx_stack
+import os
 from functools import wraps
-from jose import jwt, jwk
 from urllib.request import urlopen
 
-AUTH0_DOMAIN = 'maao.us.auth0.com'
+from flask import request
+from jose import jwt
+
+AUTH0_DOMAIN = os.getenv("AUTH0_DOMAIN", 'maao.us.auth0.com')
+API_AUDIENCE = os.getenv("AUTH0_API_AUDIENCE", 'dev')
+CLIENT_ID = os.getenv("AUTH0_CLIENT_ID", "")
 ALGORITHMS = ['RS256']
-API_AUDIENCE = 'dev'
-CLIENT_ID = 'HGeauqJ232uOWakMtQ2xV8RdNynHxBps'
-CLIENT_SECRET = 'Sm6X3-0_9zAxO3FWJbL318wCGxyuDYkCbpafNN-A8NEve_meBNdwIsJCvQhQ6h6C'
+
 ## AuthError Exception
 '''
 AuthError Exception
