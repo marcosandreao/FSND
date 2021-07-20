@@ -82,7 +82,7 @@ def create_drink():
                        description="There is a drink title='{0}'".format(title), status_code=409)
     drink = Drink()
     drink.title = title
-    drink.recipe = json.dumps([body['recipe']])
+    drink.recipe = json.dumps(body['recipe'])
     drink.insert()
     return jsonify([drink.long()])
 
@@ -118,16 +118,7 @@ def patch_drink(drink_id):
         drink.title = title
     if 'recipe' in body:
         recipe = body['recipe']
-        recipes = drink.long()['recipe']
-        # merge drinks if need
-        found_recipes = [r for r in recipes if r['name'] == recipe['name']]
-        if len(found_recipes) > 0:
-            found = found_recipes[0]
-            found['color'] = recipe['color']
-            found['parts'] = recipe['parts']
-        else:
-            recipes.append(recipe)
-        drink.recipe = json.dumps(recipes)
+        drink.recipe = json.dumps(recipe)
     drink.update()
     return jsonify([drink.long()])
 
