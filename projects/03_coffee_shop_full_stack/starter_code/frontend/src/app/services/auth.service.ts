@@ -28,6 +28,7 @@ export class AuthService {
     link += 'response_type=token&';
     link += 'client_id=' + this.clientId + '&';
     link += 'redirect_uri=' + this.callbackURL + callbackPath;
+    console.log(link);
     return link;
   }
 
@@ -65,6 +66,7 @@ export class AuthService {
   decodeJWT(token: string) {
     const jwtservice = new JwtHelperService();
     this.payload = jwtservice.decodeToken(token);
+    console.log(this.payload);
     return this.payload;
   }
 
