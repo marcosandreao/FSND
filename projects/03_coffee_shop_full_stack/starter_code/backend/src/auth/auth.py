@@ -3,13 +3,26 @@ import os
 from functools import wraps
 from urllib.request import urlopen
 
+import requests
 from flask import request
 from jose import jwt
 
 AUTH0_DOMAIN = os.getenv("AUTH0_DOMAIN", 'maao.us.auth0.com')
 API_AUDIENCE = os.getenv("AUTH0_API_AUDIENCE", 'dev')
-CLIENT_ID = os.getenv("AUTH0_CLIENT_ID", "")
+CLIENT_ID = os.getenv("AUTH0_CLIENT_ID", "HGeauqJ232uOWakMtQ2xV8RdNynHxBps")
 ALGORITHMS = ['RS256']
+# Management API Access Tokens
+# Testing: You can get a token manually using the Auth0 Dashboard for testing purposes.
+API_ACCESS_TOKEN = os.getenv("API_ACCESS_TOKEN", "")
+API_HOST = 'https://maao.us.auth0.com/api/v2'
+API_HEADER_AUTH = {'Authorization': 'Bearer {}'.format(API_ACCESS_TOKEN)}
+
+ROLE_BARISTA_ID = 'rol_J24FmR9Rx8P1K18p'
+ROLE_MANAGER_ID = 'rol_JWbghF0gMj7igznN'
+ROLE_BARISTA = 'BARISTA'
+ROLE_MANAGER = 'MANAGER'
+
+ROLES = {ROLE_BARISTA: ROLE_BARISTA_ID, ROLE_MANAGER: ROLE_MANAGER_ID}
 
 ## AuthError Exception
 '''
@@ -163,15 +176,57 @@ def verify_decode_jwt(token):
 '''
 
 
-def requires_auth(permission=''):
+def requires_auth(permission='', inject_payload=False):
     def requires_auth_decorator(f):
         @wraps(f)
         def wrapper(*args, **kwargs):
             token = get_token_auth_header()
             payload = verify_decode_jwt(token)
             check_permissions(permission, payload)
-            return f(*args, **kwargs)
+            return f(payload, *args, **kwargs) if inject_payload else f(*args, **kwargs)
 
         return wrapper
 
     return requires_auth_decorator
+
+
+def create_user_auth0(name, email, password, role):
+    """
+    create a user
+    /api/v2/users
+    associate users to a role
+    /api/v2/roles/{id}/users
+    """
+    payload = {
+        "connection": "Username-Password-Authentication",
+        "email": email,
+        "password": password,
+        "user_metadata": {
+            "name": name
+        },
+        "email_verified": False,
+        "verify_email": False,
+        "app_metadata": {}
+    }
+    result = requests.post(API_HOST + str('/users'), json=payload, headers=API_HEADER_AUTH).json()
+
+    if 'error' in result:
+        return result
+    user_id = result['user_id']
+
+    payload = {
+        "users": [user_id]
+    }
+    result = requests.post(API_HOST + str('/roles/{}/users'.format(ROLES[role.upper()])), json=payload,
+                           headers=API_HEADER_AUTH).json()
+    if 'error' in result:
+        return result
+    return None
+
+
+def list_users_by_role(role):
+    result = requests.get(API_HOST + str('/roles/{}/users'.format(ROLES[role.upper()])),
+                          headers=API_HEADER_AUTH).json()
+    if 'error' in result:
+        return []
+    return result

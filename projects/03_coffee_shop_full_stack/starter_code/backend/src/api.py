@@ -3,7 +3,7 @@ import json
 from flask import Flask, request, jsonify
 from flask_cors import CORS
 
-from .auth.auth import AuthError, requires_auth
+from .auth.auth import AuthError, requires_auth, ROLE_BARISTA, check_permissions, create_user_auth0, list_users_by_role
 from .database.models import setup_db, Drink
 
 app = Flask(__name__)
@@ -144,6 +144,40 @@ def delete_drink_by_id(drink_id):
                        description="There is not a drink id='{0}'".format(drink_id), status_code=404)
     drink.delete()
     return jsonify({'deleted': drink_id})
+
+
+'''
+@TODO Create endpoints to manage users using the Auth0 API
+Barista access is limited (can do nothing)
+Manager access is limited (can manage baristas)
+Administrator access is limited (can manage baristas, managers)
+'''
+
+
+@app.route('/users', methods=['POST'])
+@requires_auth('post:users', True)
+def create_user(payload):
+    body = request.json
+    role = body['role']
+
+    permission = 'post:users:' + str(role).lower()
+    check_permissions(permission, payload)
+
+    error = create_user_auth0(body['name'], body['email'], body['password'], body['role'])
+    if error:
+        raise ApiError(error['errorCode'], description=error['message'])
+    return ''
+
+
+@app.route('/users', methods=['GET'])
+@requires_auth('get:users', True)
+def list_users(payload):
+    role = request.args['role']
+
+    permission = 'get:users:' + str(role).lower()
+    check_permissions(permission, payload)
+
+    return jsonify(list_users_by_role(role))
 
 
 # Error Handling
