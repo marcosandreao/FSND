@@ -40,7 +40,7 @@ def db_drop_and_create_all():
     )
 
 
-drink.insert()
+# drink.insert()
 # ROUTES
 
 '''
@@ -64,7 +64,6 @@ class Drink(db.Model):
     '''
 
     def short(self):
-        print(json.loads(self.recipe))
         short_recipe = [{'color': r['color'], 'parts': r['parts']} for r in json.loads(self.recipe)]
         return {
             'id': self.id,

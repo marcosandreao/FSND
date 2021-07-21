@@ -83,3 +83,8 @@ There are `@TODO` comments throughout the `./backend/src`. We recommend tackling
 
 1. `./src/auth/auth.py`
 2. `./src/api.py`
+
+### Deploy 
+- `heroku container:push web`
+- `heroku container:release web`
+- `heroku open`

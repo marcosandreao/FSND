@@ -9,8 +9,10 @@ import { Drink } from 'src/app/services/drinks.service';
 export class DrinkGraphicComponent implements OnInit {
   @Input() drink: Drink;
 
-  constructor() { }
+  constructor() {
+   }
 
-  ngOnInit() {}
+  ngOnInit() {
+  }
 
 }
