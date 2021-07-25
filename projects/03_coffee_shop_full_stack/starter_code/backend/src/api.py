@@ -3,7 +3,7 @@ import json
 from flask import Flask, request, jsonify
 from flask_cors import CORS
 
-from .auth.auth import AuthError, requires_auth, ROLE_BARISTA, check_permissions, create_user_auth0, list_users_by_role
+from .auth.auth import AuthError, requires_auth, check_permissions, create_user_auth0, list_users_by_role
 from .database.models import setup_db, Drink
 
 app = Flask(__name__)
@@ -83,7 +83,10 @@ def create_drink():
     drink = Drink()
     drink.title = title
     drink.recipe = json.dumps(body['recipe'])
-    drink.insert()
+    try:
+        drink.insert()
+    except:
+        raise ApiError("drink_invalid_data", description="error during insert", status_code=400)
     return jsonify([drink.long()])
 
 
@@ -119,7 +122,10 @@ def patch_drink(drink_id):
     if 'recipe' in body:
         recipe = body['recipe']
         drink.recipe = json.dumps(recipe)
-    drink.update()
+    try:
+        drink.update()
+    except:
+        raise ApiError("drink_invalid_data", description="error during update", status_code=400)
     return jsonify([drink.long()])
 
 
@@ -142,7 +148,10 @@ def delete_drink_by_id(drink_id):
     if not drink:
         raise ApiError("drink_not_found",
                        description="There is not a drink id='{0}'".format(drink_id), status_code=404)
-    drink.delete()
+    try:
+        drink.delete()
+    except:
+        raise ApiError("drink_invalid_data", description="error during delete", status_code=400)
     return jsonify({'deleted': drink_id})
 
 

@@ -25,7 +25,7 @@ export class AuthService {
     link += this.url + '.auth0.com';
     link += '/authorize?';
     link += 'audience=' + this.audience + '&';
-    link += 'response_type=token&';
+    link += 'response_type=code&';
     link += 'client_id=' + this.clientId + '&';
     link += 'redirect_uri=' + this.callbackURL + callbackPath;
     console.log(link);
